@@ -1,0 +1,206 @@
+# app.py
+import tkinter as tk
+import random
+from tkinter import ttk, messagebox
+
+class App(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("NCAA Coach Simulator")
+        self.geometry("530x460")
+        self.resizable(False, False)
+
+        container = ttk.Frame(self)
+        container.pack(fill="both", expand=True)
+
+        # Register pages here
+        self.frames = {}
+        for F in (MainMenu, OptionOne, OptionTwo, SettingsPage, OptionThree):
+            frame = F(container, self)
+            self.frames[F.__name__] = frame
+            frame.grid(row=0, column=0, sticky="nsew")
+
+        self.show_frame("MainMenu")
+
+    def show_frame(self, name: str):
+        self.frames[name].tkraise()
+
+
+class MainMenu(ttk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent, padding=20)
+        ttk.Label(self, text="Main Menu", font=("Segoe UI", 18, "bold")).pack(pady=10)
+
+        ttk.Button(self, text="Two Minute Drill",
+                   command=lambda: controller.show_frame("OptionOne")).pack(fill="x", pady=6)
+        ttk.Button(self, text="Goal Line",
+                   command=lambda: controller.show_frame("OptionTwo")).pack(fill="x", pady=6)
+        ttk.Button(self, text="Chew Clock",
+                   command=lambda: controller.show_frame("SettingsPage")).pack(fill="x", pady=6)
+        ttk.Button(self, text="Regular Offense",
+                   command=lambda: controller.show_frame("OptionThree")).pack(fill="x", pady=6)
+        ttk.Button(self, text="Quit", command=controller.destroy).pack(side="bottom", pady=12)
+
+
+class OptionOne(ttk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent, padding=20)
+        ttk.Label(self, text="Coach Suggestion", font=("Segoe UI", 14, "bold")) \
+            .grid(row=0, column=0, columnspan=2, pady=(0, 10))
+
+        ttk.Label(self, text="Play Call:").grid(row=1, column=0, sticky="e", padx=(0, 8))
+        self.name_var = tk.StringVar()
+        ttk.Entry(self, textvariable=self.name_var, width=24).grid(row=1, column=1, sticky="w")
+        ttk.Button(self, text="Generate Play", command=self.say_hello) \
+            .grid(row=2, column=1, sticky="w", pady=8)
+
+        ttk.Separator(self, orient="horizontal").grid(row=3, column=0, columnspan=2, sticky="ew", pady=10)
+        ttk.Button(self, text="Back", command=lambda: controller.show_frame("MainMenu")) \
+            .grid(row=4, column=0, sticky="w")
+
+    def say_hello(self):
+        name = (self.name_var.get() or "").strip() or "there"
+        messagebox.showinfo("Hello", f"Hello, {name}! 👋")
+
+
+class OptionTwo(ttk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent, padding=20)
+        ttk.Label(self, text="Goal Line Plays", font=("Segoe UI", 14, "bold")) \
+            .grid(row=0, column=0, columnspan=3, pady=(0, 10))
+#Add the middle list from otion three and random selector
+       
+class SettingsPage(ttk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent, padding=20)
+        ttk.Label(self, text="Settings", font=("Segoe UI", 14, "bold")).pack(pady=(0, 10))
+
+        self.dark_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(self, text="Dark-ish background", variable=self.dark_var,
+                        command=self.toggle_theme).pack(anchor="w", pady=4)
+
+        ttk.Button(self, text="Back", command=lambda: controller.show_frame("MainMenu")) \
+            .pack(side="bottom", pady=12)
+
+    def toggle_theme(self):
+        # Simple background toggle (ttk widgets keep their style)
+        if self.dark_var.get():
+            self.winfo_toplevel().configure(bg="#2b2b2b")
+        else:
+            self.winfo_toplevel().configure(bg="SystemButtonFace")
+            
+class OptionThree(ttk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent, padding=20)
+        ttk.Label(self, text="Bunch X Nasty", font=("Segoe UI", 14, "bold")).pack(pady=(0, 10))
+        
+        top = ttk.LabelFrame(self, text="Add to list")
+        top.pack(fill="x", padx=10, pady=8)
+        self.entry = ttk.Entry(top)
+        self.entry.pack(side="left", padx=8, pady=8, fill="x", expand=True)
+        self.entry.bind("<Return>", lambda e: self.add_item())
+        ttk.Button(top, text="Add", command=self.add_item).pack(side="left", padx=6)
+
+        # --- Middle: list + controls ---
+        mid = ttk.Frame(self)
+        mid.pack(fill="both", expand=True, padx=10, pady=(0,8))
+
+        self.listbox = tk.Listbox(mid, height=10, activestyle="dotbox")
+        self.listbox.grid(row=0, column=0, rowspan=5, sticky="nsew")
+        sb = ttk.Scrollbar(mid, orient="vertical", command=self.listbox.yview)
+        sb.grid(row=0, column=1, rowspan=5, sticky="ns")
+        self.listbox.config(yscrollcommand=sb.set)
+
+        btns = ttk.Frame(mid)
+        btns.grid(row=0, column=2, sticky="nw", padx=(10,0))
+        ttk.Button(btns, text="Remove selected", command=self.remove_selected).pack(fill="x", pady=3)
+        ttk.Button(btns, text="Clear all", command=self.clear_all).pack(fill="x", pady=3)
+
+        # No-repeat toggle (shuffle bag)
+        self.no_repeat_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(btns, text="No repeats until bag empties",
+                        variable=self.no_repeat_var, command=self.reset_bag).pack(fill="x", pady=(12,3))
+        ttk.Button(btns, text="Reset bag", command=self.reset_bag).pack(fill="x", pady=3)
+
+        # Fill some demo items
+        for s in ["Smash Return", "Inside Zone", "Drive Y Corner", "RPO Zone Alert", "Mtn Cross Post", "Z Mesh Goal line"]:
+            self.listbox.insert("end", s)
+
+        mid.columnconfigure(0, weight=1)
+        mid.rowconfigure(0, weight=1)
+
+        # --- Bottom: result + actions ---
+        bottom = ttk.LabelFrame(self, text="Pick")
+        bottom.pack(fill="x", padx=10, pady=8)
+
+        ttk.Button(bottom, text="Pick Random", command=self.pick_random).pack(side="left", padx=8, pady=8)
+        self.result_var = tk.StringVar(value="(nothing picked yet)")
+        ttk.Label(bottom, textvariable=self.result_var, font=("Segoe UI", 12, "bold")).pack(side="left", padx=10)
+        ttk.Button(bottom, text="Copy", command=self.copy_result).pack(side="right", padx=8)
+
+        # Shuffle bag for no-repeat mode
+        self._bag = []
+        self.reset_bag()
+
+    # --- actions ---
+    def add_item(self):
+        text = self.entry.get().strip()
+        if not text:
+            return
+        self.listbox.insert("end", text)
+        self.entry.delete(0, "end")
+        self.reset_bag()
+
+    def remove_selected(self):
+        sel = list(self.listbox.curselection())
+        if not sel:
+            return
+        for i in reversed(sel):
+            self.listbox.delete(i)
+        self.reset_bag()
+
+    def clear_all(self):
+        if messagebox.askyesno("Clear all", "Remove all items from the list?"):
+            self.listbox.delete(0, "end")
+            self.reset_bag()
+
+    def copy_result(self):
+        s = self.result_var.get()
+        if not s or s == "(nothing picked yet)":
+            return
+        self.clipboard_clear()
+        self.clipboard_append(s)
+        self.update()  # keep clipboard after app closes on some platforms
+        messagebox.showinfo("Copied", f"Copied: {s}")
+
+    def get_items(self):
+        return list(self.listbox.get(0, "end"))
+
+    def reset_bag(self):
+        # Refill the bag with current items for no-repeat mode
+        if self.no_repeat_var.get():
+            self._bag = self.get_items().copy()
+            random.shuffle(self._bag)
+        else:
+            self._bag = []
+
+    def pick_random(self):
+        items = self.get_items()
+        if not items:
+            messagebox.showwarning("No items", "Add some strings first.")
+            return
+
+        if self.no_repeat_var.get():
+            # Use bag; refill when empty
+            if not self._bag:
+                self._bag = items.copy()
+                random.shuffle(self._bag)
+            choice = self._bag.pop()
+        else:
+            choice = random.choice(items)
+
+        self.result_var.set(choice)
+
+
+if __name__ == "__main__":
+    App().mainloop()
