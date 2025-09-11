@@ -1,0 +1,10 @@
+class Players:
+    def __init__(self, Health, Power, Name):
+        self.Health = Health
+        self.Power = Power
+        self.Name = Name
+
+    def printStats(self):
+        print("Health Power Name")
+        print(self.Health, self.Power, self.Name)
+        
