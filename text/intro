@@ -1,0 +1,23 @@
+from Stats import Players
+
+def backpack():
+    print(55)
+    
+def MainMenu():
+    print("Welcome to Holy Adventures")
+
+    user_class = input("Please choose your path: \n-Monk \n-Priest \n-Knight \nClass: ")
+
+    if user_class == ("Monk"):
+        x = Players(35, 20, "Monk")
+        x.printStats()
+    elif user_class == ("Priest"):
+        x = Players(20, 15, "Priest")
+        x.printStats()
+    elif user_class == ("Knight"):
+        x = Players(30, 25, "Knight")
+        x.printStats()
+
+
+
+print(MainMenu())        
