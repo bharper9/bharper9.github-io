@@ -1,0 +1,46 @@
+from Stats import Players
+# from Battle import Dungeon  
+
+def backpack():
+    print(55)
+
+def MainMenu():
+    print("Welcome to Holy Adventures")
+    choice = input("Please choose your path:\n- Monk\n- Priest\n- Knight\nClass: ").strip().lower()
+
+    classes = {
+        "monk":  (35, 20, "Monk"),
+        "priest": (20, 15, "Priest"),
+        "knight": (30, 25, "Knight"),
+    }
+    if choice not in classes:
+        print("Unknown class, defaulting to Monk.")
+        choice = "monk"
+
+    hp, power, name = classes[choice]
+    player = Players(hp, power, name)
+    player.printStats()
+    return player
+
+def BattleArc(player: Players):
+    user_path = input("There is a fork in the road.\nWould you like to go left or right?\n: ").strip().lower()
+    if user_path == "left":
+        user_battle = input("A monster appears! Will you:\n- Attack\n- Flee\n- Surrender\n: ").strip().lower()
+        if user_battle == "attack":
+            player.TakeDamage(5)     
+        elif user_battle == "flee":
+            print("You flee safely.")
+        else:
+            print("You surrender...")
+def RightBattleArc(player: Players):
+    pass
+def main():
+    
+    npc = Players(0, 0, "NPC") # use to make merchant later
+
+    player = MainMenu()      # get the player object
+    BattleArc(player)        # pass it into the battle arc
+    # You can keep going, passing `player` into other arcs
+
+if __name__ == "__main__":
+    main()
