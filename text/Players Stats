@@ -1,0 +1,13 @@
+class Players:
+    def __init__(self, Health, Power, Name):
+        self.Health = int(Health)
+        self.Power = int(Power)
+        self.Name = Name
+
+    def printStats(self):
+        print("Health Power Name")
+        print(self.Health, self.Power, self.Name)
+
+    def TakeDamage(self, amount=5):
+        self.Health = max(0, self.Health - amount)
+        print(f"{self.Name} took {amount} damage. Health now {self.Health}.")
